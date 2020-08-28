@@ -18,7 +18,12 @@
  "require": {
         "symfony/framework-bundle": ">=4.0",
        "doctrine/collections": ">=1.0"
+
   },
+
+    "require-dev": {
+	"syfony/maker-bundle": ">=1.14"
+    },
     "autoload": {
         "psr-4": {
             "Aldaflux\\MyMakerBundle\\": ""
