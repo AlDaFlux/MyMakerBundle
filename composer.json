@@ -1,0 +1,30 @@
+{
+  "name": "aldaflux/my-maker-bundle",
+  "type": "symfony-bundle",
+  "description": "This is my bundle",
+  "keywords": ["Bundle"],
+  "homepage": "https://github.com/Aldaflux/MyMakerBundle",
+  "language":  "php",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Antoine LOTZ",
+      "email": "antoine.lotz@gmail.com",
+      "homepage": "https://github.com/Aldaflux"
+    }
+  ],
+ "minimum-stability": "stable",
+ "prefer-stable":true,
+ "require": {
+        "symfony/framework-bundle": ">=4.0",
+       "doctrine/collections": ">=1.0"
+  },
+    "autoload": {
+        "psr-4": {
+            "Aldaflux\\MyMakerBundle\\": ""
+        }
+    }
+
+}
+
+
