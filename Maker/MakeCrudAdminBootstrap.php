@@ -1,6 +1,8 @@
 <?php
- 
-namespace App\Maker;
+
+namespace Aldaflux\MyMakerBundle\Maker;
+
+
 
 //use App\Form\Type\DateTimePickerType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -43,23 +45,23 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
     private $formTypeRenderer;
 
     private $inflector;
-    
+
     private $folderName;
     private $routeNamePrefix;
     private $routePathPrefix;
     private $templateFolder;
-    
+
 
     public function __construct(DoctrineHelper $doctrineHelper, FormTypeRenderer $formTypeRenderer)
     {
         $this->doctrineHelper = $doctrineHelper;
         $this->formTypeRenderer = $formTypeRenderer;
-        $this->folderName="BackOffice\\";
-        $this->routeNamePrefix="admin_";
-        $this->routePathPrefix="/admin";
-        $this->templateFolder="_backoffice/";
-        
-        
+        $this->folderName = "BackOffice";
+        $this->routeNamePrefix = "";
+        $this->routePathPrefix = "";
+        $this->templateFolder = "";
+
+
         if (class_exists(InflectorFactory::class)) {
             $this->inflector = InflectorFactory::create()->build();
         }
@@ -78,9 +80,8 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
         $command
             ->setDescription('Creates CRUD for Doctrine entity class')
             ->addArgument('entity-class', InputArgument::OPTIONAL, sprintf('The class name of the entity to create CRUD (e.g. <fg=yellow>%s</>)', Str::asClassName(Str::getRandomTerm())))
-            ->addOption('with-voter',null,InputOption::VALUE_NONE,"Créer les boutons d'accès avec les voter")
-            ->setHelp("file_get_contents(__DIR__.'/../Resources/help/MakeCrud.txt'")
-        ;
+            ->addOption('with-voter', null, InputOption::VALUE_NONE, "Créer les boutons d'accès avec les voter")
+            ->setHelp("file_get_contents(__DIR__.'/../Resources/help/MakeCrud.txt'");
         $inputConfig->setArgumentAsNonInteractive('entity-class');
     }
 
@@ -99,17 +100,13 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
             $input->setArgument('entity-class', $value);
         }
     }
-    
-    
-    
-    
 
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator)
     {
-        $withVoter= $input->getOption('with-voter');
-        
-        
-        
+        $withVoter = $input->getOption('with-voter');
+
+
+
         $entityClassDetails = $generator->createClassNameDetails(
             Validator::entityExists($input->getArgument('entity-class'), $this->doctrineHelper->getEntitiesForAutocomplete()),
             'Entity\\'
@@ -121,7 +118,7 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
 
         if (null !== $entityDoctrineDetails->getRepositoryClass()) {
             $repositoryClassDetails = $generator->createClassNameDetails(
-                '\\'.$entityDoctrineDetails->getRepositoryClass(),
+                '\\' . $entityDoctrineDetails->getRepositoryClass(),
                 'Repository\\',
                 'Repository'
             );
@@ -134,38 +131,43 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
         }
 
         $controllerClassDetails = $generator->createClassNameDetails(
-            $entityClassDetails->getRelativeNameWithoutSuffix().'Controller',
-            'Controller\\'.$this->folderName,
+            $entityClassDetails->getRelativeNameWithoutSuffix() . 'Controller',
+            'Controller\\' . $this->folderName,
             'Controller'
         );
 
         $iter = 0;
         do {
             $formClassDetails = $generator->createClassNameDetails(
-                $entityClassDetails->getRelativeNameWithoutSuffix().($iter ?: '').'Type',
+                $entityClassDetails->getRelativeNameWithoutSuffix() . ($iter ?: '') . 'Type',
                 'Form\\',
                 'Type'
             );
             ++$iter;
         } while (class_exists($formClassDetails->getFullName()));
 
-        
+
         $entityVarPlural = lcfirst($this->pluralize($entityClassDetails->getShortName()));
         $entityVarSingular = lcfirst($this->singularize($entityClassDetails->getShortName()));
 
         $entityTwigVarPlural = Str::asTwigVariable($entityVarPlural);
         $entityTwigVarSingular = Str::asTwigVariable($entityVarSingular);
- 
 
-        $routeName = $this->routeNamePrefix.Str::asRouteName($controllerClassDetails->getRelativeNameWithoutSuffix());
-        $templatesPath = $this->templateFolder.Str::asFilePath($controllerClassDetails->getRelativeNameWithoutSuffix());
 
-        $route_path = $this->routePathPrefix.Str::asRoutePath($controllerClassDetails->getRelativeNameWithoutSuffix());
+        $routeName = $this->routeNamePrefix . Str::asRouteName($controllerClassDetails->getRelativeNameWithoutSuffix());
+        $templatesPath = $this->templateFolder . Str::asFilePath($controllerClassDetails->getRelativeNameWithoutSuffix());
+
+        $route_path = $this->routePathPrefix . Str::asRoutePath($controllerClassDetails->getRelativeNameWithoutSuffix());
+
+                
+        $templatePathDir = __DIR__.'/../Resources/skeleton/';
+
                 
         $generator->generateController(
             $controllerClassDetails->getFullName(),
-            'src/Resources/skeleton/crudAdmin/controller/Controller.tpl.php',
-            array_merge([
+            $templatePathDir."crudAdmin/controller/Controller.tpl.php",
+            array_merge(
+                [
                     'entity_full_class_name' => $entityClassDetails->getFullName(),
                     'entity_class_name' => $entityClassDetails->getShortName(),
                     'form_full_class_name' => $formClassDetails->getFullName(),
@@ -179,7 +181,7 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
                     'entity_twig_var_singular' => $entityTwigVarSingular,
                     'entity_identifier' => $entityDoctrineDetails->getIdentifier(),
                     'with_voter' => $withVoter,
-                
+
                 ],
                 $repositoryVars
             )
@@ -187,61 +189,53 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
 
 
         $constraintClasses = [];
-        $extraUseClasses= [] ;
-        
+        $extraUseClasses = [];
+
         $reflect = new \ReflectionClass($entityClassDetails->getFullName());
-         
-        $entityFulName=$entityClassDetails->getFullName();
-        
+
+        $entityFulName = $entityClassDetails->getFullName();
+
         $props = $reflect->getProperties();
         $propertiesList = [];
-        foreach ($props as $prop) 
-        {
+        foreach ($props as $prop) {
             $propertiesList[] = $prop->getName();
         }
-        $propertiesList= array_diff($propertiesList, ['id']);
-        
-        
+        $propertiesList = array_diff($propertiesList, ['id']);
+
+
         $fieldsWithTypes = [];
-        
-        
-        $fieldsNotInForm=['updatedAt','createdAt','updatedBy','createdBy'];
-        $fieldsNotDisplay=['password'];
-        
-        foreach ($entityDoctrineDetails->getDisplayFields() as $fieldToDisplay)
-        {
-            if (! in_array($fieldToDisplay["fieldName"],$fieldsNotDisplay ))
-            {
-                $displayFileds[]=$fieldToDisplay;
+
+
+        $fieldsNotInForm = ['updatedAt', 'createdAt', 'updatedBy', 'createdBy'];
+        $fieldsNotDisplay = ['password'];
+
+        foreach ($entityDoctrineDetails->getDisplayFields() as $fieldToDisplay) {
+            if (!in_array($fieldToDisplay["fieldName"], $fieldsNotDisplay)) {
+                $displayFileds[] = $fieldToDisplay;
             }
         }
-        
-                
-        foreach ($propertiesList as $field) 
-        {
-            if (! in_array($field,$fieldsNotInForm) )
-            {
-                $fieldType=$this->getFieldType($entityFulName, $field  );
-                if ($fieldType=="date")
-                {
-                    $formFields[$field] = ['type' => DateType::class,'options_code' => "'widget' => 'single_text'",];
-                }
-                else
-                {
+
+
+        foreach ($propertiesList as $field) {
+            if (!in_array($field, $fieldsNotInForm)) {
+                $fieldType = $this->getFieldType($entityFulName, $field);
+                if ($fieldType == "date") {
+                    $formFields[$field] = ['type' => DateType::class, 'options_code' => "'widget' => 'single_text'",];
+                } else {
                     $formFields[$field] = null;
                 }
             }
         }
-   
-//        $formFields= array_diff($formFields,$fieldsNotInForm);
 
-        
+        //        $formFields= array_diff($formFields,$fieldsNotInForm);
+
+
         $this->formTypeRenderer->render(
             $formClassDetails,
             $formFields,
             $entityClassDetails,
-                $constraintClasses,  
-                $extraUseClasses
+            $constraintClasses,
+            $extraUseClasses
         );
 
         $templates = [
@@ -278,20 +272,20 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
                 'entity_class_name' => $entityClassDetails->getShortName(),
                 'entity_twig_var_singular' => $entityTwigVarSingular,
                 'entity_identifier' => $entityDoctrineDetails->getIdentifier(),
-                'entity_fields' => $displayFileds ,
+                'entity_fields' => $displayFileds,
                 'route_name' => $routeName,
                 'templates_path' => $templatesPath,
                 'with_voter' => $withVoter,
             ],
         ];
-        
-        
+
+
         //dump($templates["index"]);
 
         foreach ($templates as $template => $variables) {
             $generator->generateTemplate(
-                $templatesPath.'/'.$template.'.html.twig',
-                'src/Resources/skeleton/crudAdmin/templates/'.$template.'.tpl.php',
+                $templatesPath . '/' . $template . '.html.twig',
+                $templatePathDir.'crudAdmin/templates/'.$template.'.tpl.php',
                 $variables
             );
         }
@@ -361,45 +355,24 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
 
         return LegacyInflector::singularize($word);
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-private function getFieldType($entity, $fieldName)
-{
-    $annotationReader = new AnnotationReader();
-    $refClass = new \ReflectionClass($entity);
-    $annotations = $annotationReader->getPropertyAnnotations($refClass->getProperty($fieldName));
 
-    if (count($annotations) > 0) {
-        foreach ($annotations as $annotation) {
-            if (
-                $annotation instanceof \Doctrine\ORM\Mapping\Column
-                && property_exists($annotation, 'type')
-            ) {
-                return $annotation->type;
+    private function getFieldType($entity, $fieldName)
+    {
+        $annotationReader = new AnnotationReader();
+        $refClass = new \ReflectionClass($entity);
+        $annotations = $annotationReader->getPropertyAnnotations($refClass->getProperty($fieldName));
+
+        if (count($annotations) > 0) {
+            foreach ($annotations as $annotation) {
+                if (
+                    $annotation instanceof \Doctrine\ORM\Mapping\Column
+                    && property_exists($annotation, 'type')
+                ) {
+                    return $annotation->type;
+                }
             }
         }
-    }
 
-    return null;
-}
-    
-    
-    
+        return null;
+    }
 }

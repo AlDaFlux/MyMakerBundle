@@ -1,0 +1,12 @@
+services:
+   Aldaflux\MyMakerBundle\Maker\MakeCrudBootstrap:
+#    arguments: ["%kernel.project_dir%"]
+    arguments: ["@maker.doctrine_helper"]
+    tags:
+      - { name: maker.command }
+   Aldaflux\MyMakerBundle\Maker\MakeCrudAdminBootstrap:
+#    arguments: ["%kernel.project_dir%"]
+    arguments: ["@maker.doctrine_helper", "@maker.renderer.form_type_renderer"]
+    tags:
+      - { name: maker.command }
+

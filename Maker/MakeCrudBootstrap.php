@@ -1,15 +1,7 @@
 <?php
 
-/*
- * This file is part of the Symfony MakerBundle package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+namespace Aldaflux\MyMakerBundle\Maker;
 
-namespace App\Maker;
 
 
 use Symfony\Bundle\MakerBundle\Maker\AbstractMaker;
@@ -34,6 +26,8 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Validator\Validation;
+
+
 
 /**
  * @author Sadicov Vladimir <sadikoff@gmail.com>
@@ -130,9 +124,11 @@ final class MakeCrudBootstrap   extends AbstractMaker
         $routeName = Str::asRouteName($controllerClassDetails->getRelativeNameWithoutSuffix());
         $templatesPath = Str::asFilePath($controllerClassDetails->getRelativeNameWithoutSuffix());
 
+        $templatePathDir = __DIR__.'/../Resources/skeleton/';
+        
         $generator->generateController(
             $controllerClassDetails->getFullName(),
-            'src/Resources/skeleton/crudBootstrap/controller/Controller.tpl.php',
+            $templatePathDir."crudBootstrap/controller/Controller.tpl.php",
             array_merge([
                     'entity_full_class_name' => $entityClassDetails->getFullName(),
                     'entity_class_name' => $entityClassDetails->getShortName(),
@@ -171,7 +167,7 @@ final class MakeCrudBootstrap   extends AbstractMaker
         foreach ($templates as $template => $variables) {
             $generator->generateTemplate(
                 $templatesPath.'/'.$template.'.html.twig',
-                'src/Resources/skeleton/crudBootstrap/templates/'.$template.'.tpl.php',
+                $templatePathDir.'crudBootstrap/templates/'.$template.'.tpl.php',
                 $variables
             );
         }
