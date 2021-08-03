@@ -25,9 +25,8 @@ class MyMakerExtension extends Extension
         $loader->load('services.yml');
         
         
-        /*
-        $container->setParameter( 'aldaflux_my_maker.parameter1', $config[ 'parameter1' ] );
-        */
+        
+        $container->setParameter('aldaflux_mymaker.config', $config );
 
         
         

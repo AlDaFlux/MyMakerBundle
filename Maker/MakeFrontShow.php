@@ -27,31 +27,61 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Validator\Validation;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface; 
+
+
 
 
 /**
  * @author Sadicov Vladimir <sadikoff@gmail.com>
  */
-final class MakeCrudBootstrap   extends AbstractMaker
+final class MakeFrontShow extends AbstractMaker
 {
     private $doctrineHelper;
-
-    private $formTypeRenderer;
-
+    private $parameters;
     private $inflector;
+    
+    private $folderControllerName;
+    private $templateFolder;
 
-    public function __construct(DoctrineHelper $doctrineHelper)
+    public static function getCommandName(): string
     {
+        return 'make:front:show';
+    }
+
+    public function __construct(DoctrineHelper $doctrineHelper, ParameterBagInterface $parameters)
+    {
+        $this->parameters = $parameters;
+        
+        $config=$this->parameters->Get("aldaflux_mymaker.config");
+        
+        if (isset($config["frontoffice"]))
+        {
+            $config=$config["frontoffice"];
+        }
+       
+        if (isset($config["folder"]))
+        {
+            if (isset($config["folder"]["controller"]))
+            {
+                if ($config["folder"]["controller"])
+                {
+                    $this->folderControllerName = $config["folder"]["controller"].'\\';
+                }
+            }
+            if (isset($config["folder"]["template"]))
+            {
+                $this->templateFolder = $config["folder"]["template"].'/';
+            }
+        }
+        
+
         $this->doctrineHelper = $doctrineHelper;
         if (class_exists(InflectorFactory::class)) {
             $this->inflector = InflectorFactory::create()->build();
         }
     }
 
-    public static function getCommandName(): string
-    {
-        return 'make:crud:bootstrap';
-    }
 
     /**
      * {@inheritdoc}
@@ -110,7 +140,7 @@ final class MakeCrudBootstrap   extends AbstractMaker
 
         $controllerClassDetails = $generator->createClassNameDetails(
             $entityClassDetails->getRelativeNameWithoutSuffix().'Controller',
-            'Controller\\',
+            'Controller\\'. $this->folderControllerName,
             'Controller'
         );
 
@@ -122,8 +152,9 @@ final class MakeCrudBootstrap   extends AbstractMaker
         $entityTwigVarSingular = Str::asTwigVariable($entityVarSingular);
 
         $routeName = Str::asRouteName($controllerClassDetails->getRelativeNameWithoutSuffix());
-        $templatesPath = Str::asFilePath($controllerClassDetails->getRelativeNameWithoutSuffix());
+        $templatesPath = $this->templateFolder.Str::asFilePath($controllerClassDetails->getRelativeNameWithoutSuffix());
 
+        
         $templatePathDir = __DIR__.'/../Resources/skeleton/';
         
         $generator->generateController(

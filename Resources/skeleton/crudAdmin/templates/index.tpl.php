@@ -1,4 +1,9 @@
-<?= $helper->getHeadPrintCode($entity_class_name.' index'); ?>
+<?php if ($extend) {?>
+    {% extends "<?= $extend ?>" %}
+<?php }?>
+    
+
+
 
 {% block body %}
     <h1><a href="{{ path('<?= $route_name ?>_index') }}"><?= $entity_class_name ?></a></h1>

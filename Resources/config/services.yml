@@ -1,12 +1,19 @@
 services:
-   Aldaflux\MyMakerBundle\Maker\MakeCrudBootstrap:
-#    arguments: ["%kernel.project_dir%"]
-    arguments: ["@maker.doctrine_helper"]
+   Aldaflux\MyMakerBundle\Maker\MakeFrontShow:
+    arguments: ["@maker.doctrine_helper", "@parameter_bag"]
     tags:
       - { name: maker.command }
-   Aldaflux\MyMakerBundle\Maker\MakeCrudAdminBootstrap:
-#    arguments: ["%kernel.project_dir%"]
-    arguments: ["@maker.doctrine_helper", "@maker.renderer.form_type_renderer"]
+   Aldaflux\MyMakerBundle\Maker\MakeCrudAdmin:
+    arguments: ["@maker.doctrine_helper", "@maker.renderer.form_type_renderer", "@parameter_bag"]
+    tags:
+      - { name: maker.command }
+   Aldaflux\MyMakerBundle\Maker\MakeBundle:
+    arguments: ["@parameter_bag"]
+    tags:
+      - { name: maker.command }
+   Aldaflux\MyMakerBundle\Maker\MakeDataCollector:
+    arguments: ["@maker.file_manager","@maker.doctrine_helper", "@parameter_bag"]
     tags:
       - { name: maker.command }
 
+#    arguments: ["%kernel.project_dir%"]

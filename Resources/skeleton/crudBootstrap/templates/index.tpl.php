@@ -1,4 +1,4 @@
-<?= $helper->getHeadPrintCode($entity_class_name.' index'); ?>
+{% extends "base.html.twig" %}
 
 {% block body %}
     <h1><a href="{{ path('<?= $route_name ?>_index') }}"><?= $entity_class_name ?></a></h1>

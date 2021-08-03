@@ -34,43 +34,89 @@ use Symfony\Component\Validator\Validation;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface; 
+
 
 /**
  * @author Sadicov Vladimir <sadikoff@gmail.com>
  */
-final class MakeCrudAdminBootstrap   extends AbstractMaker
+final class MakeCrudAdmin extends AbstractMaker
 {
     private $doctrineHelper;
 
     private $formTypeRenderer;
 
+    private $parameters;
+
     private $inflector;
 
-    private $folderName;
+    private $folderControllerName;
     private $routeNamePrefix;
     private $routePathPrefix;
     private $templateFolder;
-
-
-    public function __construct(DoctrineHelper $doctrineHelper, FormTypeRenderer $formTypeRenderer)
-    {
-        $this->doctrineHelper = $doctrineHelper;
-        $this->formTypeRenderer = $formTypeRenderer;
-        $this->folderName = "BackOffice";
-        $this->routeNamePrefix = "";
-        $this->routePathPrefix = "";
-        $this->templateFolder = "";
-
-
-        if (class_exists(InflectorFactory::class)) {
-            $this->inflector = InflectorFactory::create()->build();
-        }
-    }
 
     public static function getCommandName(): string
     {
         return 'make:crud:admin';
     }
+
+    public function __construct(DoctrineHelper $doctrineHelper, FormTypeRenderer $formTypeRenderer, ParameterBagInterface $parameters)
+    {
+        $this->doctrineHelper = $doctrineHelper;
+        $this->formTypeRenderer = $formTypeRenderer;
+        $this->parameters = $parameters;
+        
+        $config=$this->parameters->Get("aldaflux_mymaker.config");
+        
+        if (isset($config["backoffice"]))
+        {
+            $config=$config["backoffice"];
+        }
+       
+        if (isset($config["folder"]))
+        {
+            
+            if (isset($config["folder"]["controller"]))
+            {
+                if ($config["folder"]["controller"])
+                {
+                    $this->folderControllerName = $config["folder"]["controller"].'\\';
+                }
+            }
+            if (isset($config["folder"]["template"]))
+            {
+                $this->templateFolder = $config["folder"]["template"].'/';
+            }
+        }
+        if (isset($config["route"]))
+        {
+            if (isset($config["route"]["name_prefix"]))
+            {
+                $this->routeNamePrefix = $config["route"]["name_prefix"];
+            }
+            if (isset($config["route"]["path_prefix"]))
+            {
+                $this->routePathPrefix = $config["route"]["path_prefix"];
+            }
+        }
+
+        if (isset($config["extend"]))
+        {
+            $this->extend = $config["extend"];
+        }
+        else
+        {
+            $this->extend="";
+        }
+
+        
+        
+        if (class_exists(InflectorFactory::class)) {
+            $this->inflector = InflectorFactory::create()->build();
+        }
+    }
+
+   
 
     /**
      * {@inheritdoc}
@@ -132,7 +178,7 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
 
         $controllerClassDetails = $generator->createClassNameDetails(
             $entityClassDetails->getRelativeNameWithoutSuffix() . 'Controller',
-            'Controller\\' . $this->folderName,
+            'Controller\\' . $this->folderControllerName,
             'Controller'
         );
 
@@ -180,7 +226,7 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
                     'entity_var_singular' => $entityVarSingular,
                     'entity_twig_var_singular' => $entityTwigVarSingular,
                     'entity_identifier' => $entityDoctrineDetails->getIdentifier(),
-                    'with_voter' => $withVoter,
+                    'with_voter' => $withVoter
 
                 ],
                 $repositoryVars
@@ -253,6 +299,8 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
                 'route_name' => $routeName,
                 'templates_path' => $templatesPath,
                 'with_voter' => $withVoter,
+                'extend' => $this->extend,
+                
             ],
             'index' => [
                 'entity_class_name' => $entityClassDetails->getShortName(),
@@ -262,11 +310,13 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
                 'entity_fields' => $displayFileds,
                 'route_name' => $routeName,
                 'with_voter' => $withVoter,
+                'extend' => $this->extend,
             ],
             'new' => [
                 'entity_class_name' => $entityClassDetails->getShortName(),
                 'route_name' => $routeName,
                 'templates_path' => $templatesPath,
+                'extend' => $this->extend,
             ],
             'show' => [
                 'entity_class_name' => $entityClassDetails->getShortName(),
@@ -276,6 +326,7 @@ final class MakeCrudAdminBootstrap   extends AbstractMaker
                 'route_name' => $routeName,
                 'templates_path' => $templatesPath,
                 'with_voter' => $withVoter,
+                'extend' => $this->extend,
             ],
         ];
 
