@@ -1,0 +1,7 @@
+services:
+   Aldaflux\Bundle\SeoBundle\DataCollector\RequestCollector:
+        arguments: ["@aldaflux_seo.seo_service"]
+        tags:
+            -
+                name:     data_collector
+                id:       'aldaflux_seo.request_collector'

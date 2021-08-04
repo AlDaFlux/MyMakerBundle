@@ -60,6 +60,11 @@ final class MakeDataCollector extends AbstractMaker
     }
 
 
+    public function getSkeletonFolder()
+    {
+        return(__DIR__.'/../Resources/skeleton/');
+    }
+    
     /**
      * {@inheritdoc}
      */
@@ -101,29 +106,23 @@ final class MakeDataCollector extends AbstractMaker
              $extendClass="Symfony\Component\HttpKernel\DataCollector\DataCollector";
              $parentClassName="DataCollector";
          }
- 
-        $templatePathDir = __DIR__.'/../Resources/skeleton/';
-        
         $templatesPath = "data_collector";
         
         $CollectorClassName=$input->getArgument('entity-class');
-        $entityClassDetails = $generator->createClassNameDetails(
+        $collectorClassDetails = $generator->createClassNameDetails(
             $CollectorClassName,
             'DataCollector\\'
         );
         
-        
-        
-         $templatesPathCollector=$templatesPath.'/'.Str::asFilePath($entityClassDetails->getShortName()).'.html.twig';
-        
-         $collectorNameString=Str::asTwigVariable($entityClassDetails->getShortName());
-         
-        $generator->generateClass(
-            $entityClassDetails->getFullName(),
-             $templatePathDir.'DataCollector/DataCollector/Collector.tpl.php',
+         $templatesPathCollector=$templatesPath.'/'.Str::asFilePath($collectorClassDetails->getShortName()).'.html.twig';
+         $collectorNameString=Str::asTwigVariable($collectorClassDetails->getShortName());
+
+         $generator->generateClass(
+            $collectorClassDetails->getFullName(),
+             $this->getSkeletonFolder().'DataCollector/DataCollector/Collector.tpl.php',
             [
                 'collector_name_string' => $collectorNameString,
-                'class_name' => $entityClassDetails->getShortName(), 
+                'class_name' => $collectorClassDetails->getShortName(), 
                 "template_path"=>$templatesPathCollector,                
                 "parent_class_name"=>$parentClassName,                
                 "extend_class"=>$extendClass,                
@@ -131,23 +130,17 @@ final class MakeDataCollector extends AbstractMaker
         );
         
         
-        $iconPath=$templatesPath.'/icon/'.Str::asFilePath($entityClassDetails->getShortName()).'.svg';
-        
-      
-        
+            $iconPath=$templatesPath.'/icon/'.Str::asFilePath($collectorClassDetails->getShortName()).'.svg';
         
             $generator->generateTemplate(
                  $templatesPathCollector,
-                $templatePathDir.'DataCollector/templates/data_collector/template.html.twig.tpl.php',
-                ["collector_name"=>$entityClassDetails->getShortName(),
-                    "icon_path"=>$iconPath
-                    ]
-            );
-            
+                $this->getSkeletonFolder().'DataCollector/templates/data_collector/template.html.twig.tpl.php',
+                    ["collector_name"=>$collectorClassDetails->getShortName(),
+                    "icon_path"=>$iconPath]);
             
             $generator->generateTemplate(
                  $iconPath,
-                $templatePathDir.'DataCollector/templates/data_collector/icon/icon.svg.tpl.php',
+                $this->getSkeletonFolder().'DataCollector/templates/data_collector/icon/icon.svg.tpl.php',
                 ['color'=>self::getRandomColor()]
             );
         
@@ -158,7 +151,7 @@ final class MakeDataCollector extends AbstractMaker
                 $servicesData = $manipulator->getData();
                 $tag["name"]="data_collector";
                 $tag["id"]=$collectorNameString;
-                $servicesData['services'][$entityClassDetails->getFullName()]['tags'][]=$tag;
+                $servicesData['services'][$collectorClassDetails->getFullName()]['tags'][]=$tag;
                 $manipulator->setData($servicesData);
                 $generator->dumpFile($configFilePath, $manipulator->getContents());
             }

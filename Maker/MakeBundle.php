@@ -11,6 +11,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
 
+use Symfony\Bundle\MakerBundle\FileManager;
+
 
 use Symfony\Bundle\MakerBundle\Generator;
 use Symfony\Bundle\MakerBundle\InputConfiguration;
@@ -20,6 +22,9 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Routing\Annotation\Route;
+
+use Symfony\Component\HttpKernel\Kernel;
+
 
 
 
@@ -33,8 +38,9 @@ final class MakeBundle extends AbstractMaker
     private $bundleName;
     private $parameters;
 
-    public function __construct(ParameterBagInterface $parameters)
+    public function __construct(FileManager $fileManager, ParameterBagInterface $parameters)
     {
+        $this->fileManager = $fileManager;
         $this->parameters = $parameters;
          
     }
@@ -55,39 +61,28 @@ final class MakeBundle extends AbstractMaker
             ->addArgument('vendor', InputArgument::OPTIONAL, sprintf('The class name of the vendor (e.g. <fg=yellow>%s</>)', Str::asClassName(Str::getRandomTerm()."")))
             ->addArgument('bundle-name', InputArgument::OPTIONAL, sprintf('The class name of the bundle to create (e.g. <fg=yellow>%s</>)', Str::asClassName(Str::getRandomTerm()."Bundle")))
         ;
-        /*
-         
-         * 
-         *  
-        $inputConfig->setArgumentAsNonInteractive('vendor');
-        $inputConfig->setArgumentAsNonInteractive('bundleNamewithSuffixe');
-         * 
-         */
-
+      
     }
- 
-/*    
-    public function interact(InputInterface $input, ConsoleStyle $io, Command $command)
-    {
-        if (null === $input->getArgument('entity-class')) {
-            $argument = $command->getDefinition()->getArgument('entity-class');
-            $question = new Question($argument->getDescription());
-            $value = $io->askQuestion($question);
-            $input->setArgument('entity-class', $value);
-        }
-    }
-*/
+  
     
+    public function getSkeletonFolderBundle()
+    {
+        return($this->getSkeletonFolder().'/bundle/');
+    }
     
     public function getSkeletonFolder()
     {
-        $templatePathDir = __DIR__.'/../Resources/skeleton/bundle/';
-        return($templatePathDir);
+        return(__DIR__.'/../Resources/skeleton/');
     }
+    
 
     public function getBundleRootFolder()
     {
-        return(strtolower($this->getVendorName())."/".Str::asCommand($this->getBundleName()));
+        return(strtolower($this->getVendorName())."/".Str::asCommand($this->getBundleName())."/");
+    }
+    public function getTemplateFolder()
+    {
+        return($this->getBundleRootFolder()."Resources/views/");
     }
     
     public function getVendorName()
@@ -142,49 +137,50 @@ final class MakeBundle extends AbstractMaker
 
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator)
     {
-  
+            
             $this->vendor=$input->getArgument('vendor');
             $this->bundleName=$input->getArgument('bundle-name');
+            
+            $this->generator = new Generator($this->fileManager, 'Aldaflux\\'.$this->bundleName);
+            
+            $withCollector=true;
+            $loadServiceYml=true;
+            
+            
+            
+            $bundleClassDetails = $this->generator->createClassNameDetails($this->bundleName,"");
+            
+            
+            $rootNode=Str::asRouteName($this->getVendorName().'/'.$this->getBundleNameSimple());
 
-            /*
-        $varTest="AlDaFlux";
-        $varTest=$this->getVendorName();
-        $varTest=$this->getBundleName();
-        
-    
-        $varTest=Str::removeSuffix($this->getVendorName().'/'.$this->getBundleName(),"Bundle");
-        dump(Str::asHumanWords($varTest));
-        dump(Str::asFilePath($varTest));
-        dump(Str::getNamespace($varTest));
-        dump(Str::asRoutePath($varTest));
-        dump("ICI");
-        dump(Str::asRouteName($varTest));
-        dump("ICI");
-        dump(Str::asCommand($varTest));
-        dump(Str::asSnakeCase($varTest));
-        dump(Str::asCamelCase($varTest));
-        dump(Str::asLowerCamelCase($varTest));
-        dump(Str::asTwigVariable($varTest));
 
+            $bundleClassDetails = $this->generator->createClassNameDetails($this->bundleName,"");
+            
+
+            if ($withCollector)
+            {
+                $this->makeCollector();
+            }
+      
         
-        dump(Str::getNamespace($varTest));
-  
-        return(0);
-        /*
-        */
-        $bundleClassNameDetails = $generator->createClassNameDetails('\\'.$this->getVendorName().'\\'.$this->getBundleName(), 'Controller', 'Controller');
+       
+        $bundleClassNameDetails = $generator->createClassNameDetails('\\'.$this->getVendorName().'\\'.$this->getBundleName(),"Bundle");
 
         $nameSpace= ($bundleClassNameDetails->getFullName());
-        $className=$this->getBundleName();
- 
-        $variables=[
-                'class_name' => Str::getShortClassName($className),
-                'namespace' => $nameSpace,
-            ];
-         
-        $generator->generateFile($this->getBundleRootFolder()."/".$this->getBundleName().'.php',$this->getSkeletonFolder().'bundle.tpl.php',$variables);
- 
 
+ 
+         
+        $this->generator->generateFile(
+                $this->getBundleRootFolder().$this->getBundleName().'.php',
+                $this->getSkeletonFolderBundle().'bundle.tpl.php',[
+                'class_name' => Str::getShortClassName($this->getBundleName()),
+                'namespace' => $nameSpace,
+                'loadServiceYml' => $loadServiceYml,
+                    
+            ]);
+
+
+        
         $variables=[
                 'name' => strtolower( $this->getVendorName().'/'.Str::asCommand($this->getBundleName())),
                 'namespace' => $nameSpace,
@@ -192,22 +188,20 @@ final class MakeBundle extends AbstractMaker
                 'author' => $this->getAuthorInfos(),
                 'psr4' => $this->getVendorName().'\\\\'.$this->getBundleName()."\\\\",
             ];
-        $generator->generateFile($this->getBundleRootFolder()."/composer.json",$this->getSkeletonFolder().'composer.tpl.json',$variables);
-
-        // README.md
-        $generator->generateFile($this->getBundleRootFolder()."/README.md",$this->getSkeletonFolder().'README.tpl.md',["name"=>$this->getBundleName()]);
-
-
-
-        $rootNode=Str::asRouteName($this->getVendorName().'/'.$this->getBundleNameSimple());
-        $generator->generateFile($this->getBundleRootFolder()."/DependencyInjection/Configuration.php",$this->getSkeletonFolder().'/DependencyInjection/Configuration.tpl.php',['namespace' => $nameSpace,'root_node' => $rootNode]);
-
-
-        $generator->generateFile($this->getBundleRootFolder()."/DependencyInjection/".$this->getBundleNameSimple()."Extension.php",$this->getSkeletonFolder().'/DependencyInjection/Extension.tpl.php',['namespace' => $nameSpace,'bundle_name_simple' => $this->getBundleNameSimple(),'root_node' => $rootNode]);
+        $this->generator->generateFile($this->getBundleRootFolder()."composer.json",$this->getSkeletonFolderBundle().'composer.tpl.json',$variables);
+        $this->generator->generateFile($this->getBundleRootFolder()."README.md",$this->getSkeletonFolderBundle().'README.tpl.md',["name"=>$this->getBundleName()]);
+        $this->generator->generateFile($this->getBundleRootFolder()."DependencyInjection/Configuration.php",$this->getSkeletonFolderBundle().'/DependencyInjection/Configuration.tpl.php',['namespace' => $nameSpace,'root_node' => $rootNode]);
+        $this->generator->generateFile($this->getBundleRootFolder()."DependencyInjection/".$this->getBundleNameSimple()."Extension.php",$this->getSkeletonFolderBundle().'/DependencyInjection/Extension.tpl.php',
+                ['namespace' => $nameSpace,
+                    'bundle_name_simple' => $this->getBundleNameSimple(),
+                    'root_node' => $rootNode,
+                    'load_service_yml' => $loadServiceYml
+                ]);
 
         
-        $generator->writeChanges();
+        $this->generator->writeChanges();
         $this->writeSuccessMessage($io);
+        
 
 
                 
@@ -226,23 +220,87 @@ final class MakeBundle extends AbstractMaker
      */
     public function configureDependencies(DependencyBuilder $dependencies)
     {
-        $dependencies->addClassDependency(
-            Route::class,
-            'router'
-        );
-  
-        $dependencies->addClassDependency(
-            TwigBundle::class,
-            'twig-bundle'
-        );
-        /*
-        $dependencies->addClassDependency(
-            ParamConverter::class,
-            'annotations'
-        );
-         * 
-         */
+ 
     }
 
+    
+    function makeCollector()
+    {
+        
+        
+             $CollectorClassName=$this->bundleName."Collector";
+                $collectorClassDetails = $this->generator->createClassNameDetails(
+                    $CollectorClassName,
+                    'DataCollector\\'
+                );
+
+                $collectorNameString=Str::asTwigVariable($this->vendor).".".Str::asTwigVariable($collectorClassDetails->getShortName());
+                
+                
+                $this->generator->generateFile(
+                        $this->getBundleRootFolder().'Resources/config/services.yml',
+                        $this->getSkeletonFolderBundle().'Resources/config/services.yml.tpl.php', 
+                        [
+                            "collector_service"=>$collectorClassDetails->getFullName(), 
+                            "id_collector"=>$collectorNameString
+                        ]);        
+                
+        if (Kernel::VERSION_ID >= 50200) 
+         {
+             $extendClass="Symfony\Bundle\FrameworkBundle\DataCollector\AbstractDataCollector";
+             $parentClassName="AbstractDataCollector";
+         }
+         else
+         {
+             $extendClass="Symfony\Component\HttpKernel\DataCollector\DataCollector";
+             $parentClassName="DataCollector";
+         }
+         
+        $templatesPath = "data_collector/";
+        
+        
+        
+         $templatesPathCollector=$templatesPath.''.Str::asFilePath($collectorClassDetails->getShortName()).'.html.twig';
+
+                  
+         $templatesPathCollectorBundle="@".Str::removeSuffix(Str::getShortClassName($this->getBundleName()),"Bundle")."/".$templatesPathCollector;
+         
+        // $collectorNameString=Str::asTwigVariable($collectorClassDetails->getShortName());
+         
+          
+         
+            
+         
+            $this->generator->generateFile(
+            $this->getBundleRootFolder().'DataCollector/'.Str::getShortClassName($collectorClassDetails->getShortName()).'.php',
+            $this->getSkeletonFolder().'DataCollector/DataCollector/Collector.tpl.php',
+            [
+                'namespace' => Str::getNamespace($collectorClassDetails->getFullName()),
+                'collector_name_string' => $collectorNameString,
+                'class_name' => $collectorClassDetails->getShortName(), 
+                "template_path"=>$templatesPathCollectorBundle,                
+                "parent_class_name"=>$parentClassName,                
+                "extend_class"=>$extendClass,                
+            ]
+        );
+            
+            
+            
+            $iconPath=$templatesPath.'icon/'.Str::asFilePath($collectorClassDetails->getShortName()).'.svg';
+
+            $this->generator->generateFile(
+            $this->getTemplateFolder().$iconPath,
+            $this->getSkeletonFolder().'DataCollector/templates/data_collector/icon/icon.svg.tpl.php',['color'=>"gray"]);
+            
+            $this->generator->generateFile(
+            $this->getTemplateFolder().$templatesPathCollector,
+            $this->getSkeletonFolder().'DataCollector/templates/data_collector/template.html.twig.tpl.php',
+                [   
+                    "collector_name"=>$collectorClassDetails->getShortName(),
+                    "icon_path"=>$iconPath
+                    ]
+            );
+             
+    }
      
 }

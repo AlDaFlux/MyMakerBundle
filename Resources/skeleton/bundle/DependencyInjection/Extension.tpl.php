@@ -18,16 +18,15 @@ class <?= $bundle_name_simple ?>Extension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
         
-        
         /*
         $container->setParameter( '<?= $root_node ?>.parameter1', $config[ 'parameter1' ] );
         */
 
+        <?php if ($load_service_yml): ?>
+                $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+                $loader->load('services.yml');
+        <?php endif ?>        
         
         
-        /* 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('services.yml');
-        */
     }
 }
