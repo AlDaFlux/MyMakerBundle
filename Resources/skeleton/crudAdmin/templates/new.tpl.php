@@ -1,10 +1,14 @@
-{% extends "base.html.twig" %}
+<?php if ($extend) {?>
+    {% extends "<?= $extend ?>" %}
+<?php }?>
+    
+
 
 
 {% block body %}
-    <h1><a href="{{ path('<?= $route_name ?>_index') }}"><?= $entity_class_name ?></a></h1>
+    <h1><a href="{{ path('<?= $route_name ?>_index') }}"><?= $human_word_entity_name ?></a></h1>
     <h2>
-        <i class='{% trans %}crud.new.icon{% endtrans %}'></i> {% trans %}crud.new.text{% endtrans %} <?= $entity_class_name ?>
+        <i class='{% trans %}crud.new.icon{% endtrans %}'></i> {% trans %}crud.new.text{% endtrans %} <?= $human_word_entity_name ?>
     </h2>
 
     {{ include('<?= $templates_path ?>/_form.html.twig') }}

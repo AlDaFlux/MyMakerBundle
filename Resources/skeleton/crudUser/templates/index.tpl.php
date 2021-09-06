@@ -6,7 +6,7 @@
 
 
 {% block body %}
-    <h1><a href="{{ path('<?= $route_name ?>_index') }}"><?= $human_word_entity_name ?></a></h1>
+    <h1><a href="{{ path('<?= $route_name ?>_index') }}"><?= $entity_class_name ?></a></h1>
 
     <table class="table table-bordered table-triable">
         <thead>
@@ -67,4 +67,5 @@
     </table>
 
     <a class='btn btn-block btn-primary ' href="{{ path('<?= $route_name ?>_new') }}"> <i class='{% trans %}crud.new.icon{% endtrans %}'></i> {% trans %}crud.new.text{% endtrans %}</a>
+    <a class='btn btn-block btn-primary ' href="{{ path('<?= $route_name ?>_profile') }}">{% trans %}user.profile{% endtrans %}</a>    
 {% endblock %}

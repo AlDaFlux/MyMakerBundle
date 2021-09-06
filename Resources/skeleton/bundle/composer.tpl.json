@@ -6,13 +6,6 @@
   "homepage": "<?= $homepage ?>",
   "language":  "php",
   "license": "MIT",
-  "authors": [
-    {
-      "name": "<?= $author['name'] ?>",
-      "email": "<?= $author['email']  ?>",
-      "homepage": "<?= $author['site']  ?>"
-    }
-  ],
  "minimum-stability": "stable",
  "prefer-stable":true,
  "require": {

@@ -8,15 +8,6 @@ crud:
     edit:
         text: Modifier
         icon: glyphicon glyphicon-pencil
-        users:
-            text: Assigner ou retirer des utilisateurs
-            icon: glyphicon glyphicon-pencil
-        identity:
-            text: Modifier
-            icon: glyphicon glyphicon-pencil
-        services:
-            text: Modifier les services ayant accès à cet enfant
-            icon: glyphicon glyphicon-pencil
     list:
         none: Aucun enregistrement
     save:
@@ -26,5 +17,10 @@ crud:
         text: Supprimer
         icon: glyphicon glyphicon-trash
         before: Voulez-vous vraiment supprimer ?
-
-        
+user:
+    role:
+        singular:Rôle
+        singular:Rôle
+        plural:Rôles
+    
+    

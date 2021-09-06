@@ -5,7 +5,7 @@
 
 
 {% block body %}
-    <h1><a href="{{ path('<?= $route_name ?>_index') }}"><?= $human_word_entity_name ?></a></h1>
+    <h1><a href="{{ path('<?= $route_name ?>_index') }}"><?= $entity_class_name ?></a></h1>
 
     <table class="table table-bordered">
         <tbody>
@@ -21,7 +21,7 @@
      
 
     <div class='row'>
-    <div class='col-md-6'>
+    <div class='col-md-4'>
                     <?php if ($with_voter) {?>
                         {% if is_granted('delete', <?= $entity_twig_var_singular ?>) %}
                     <?php }?>
@@ -31,18 +31,24 @@
                     <?php }?>
 
     </div>
-    <div class='col-md-6'>
-    
+    <div class='col-md-4'>
                     <?php if ($with_voter) {?>
                         {% if is_granted('edit', <?= $entity_twig_var_singular ?>) %}
                     <?php }?>
-                        <a class='btn btn-block btn-warning' href="{{ path('<?= $route_name ?>_edit', {'<?= $entity_identifier ?>': <?= $entity_twig_var_singular ?>.<?= $entity_identifier ?>}) }}"><i class='{% trans %}crud.edit.icon{% endtrans %}'></i>
-                        {% trans %}crud.edit.text{% endtrans %}
-                        </a>
+                        <a class='btn btn-block btn-warning' href="{{ path('<?= $route_name ?>_edit', {'<?= $entity_identifier ?>': <?= $entity_twig_var_singular ?>.<?= $entity_identifier ?>}) }}"><i class='{% trans %}crud.edit.icon{% endtrans %}'></i>{% trans %}crud.edit.text{% endtrans %}</a>
                     <?php if ($with_voter) {?>
                         {% endif  %}
                     <?php }?>
-
+        </a>
+    </div>
+    <div class='col-md-4'>
+                    <?php if ($with_voter) {?>
+                        {% if is_granted('edit', <?= $entity_twig_var_singular ?>) %}
+                    <?php }?>
+                        <a class='btn btn-block btn-warning' href="{{ path('<?= $route_name ?>_change_password', {'<?= $entity_identifier ?>': <?= $entity_twig_var_singular ?>.<?= $entity_identifier ?>}) }}"><i class='{% trans %}crud.change_password.icon{% endtrans %}'></i>{% trans %}crud.change_password.text{% endtrans %}</a>
+                    <?php if ($with_voter) {?>
+                        {% endif  %}
+                    <?php }?>
         </a>
     </div>
     </div>

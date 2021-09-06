@@ -12,6 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+<?php if ($with_voter) {?>use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;<?php }?>   
+
+
 /**
  * @Route("<?= $route_path ?>")
  */
@@ -75,6 +78,8 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
 
     /**
      * @Route("/{<?= $entity_identifier ?>}/edit", name="<?= $route_name ?>_edit", methods={"GET","POST"})
+<?php if ($with_voter) {?>     * @IsGranted("edit", subject="<?= $entity_var_singular ?>", message="crud.edit.nogranted")
+<?php }?>
      */
     public function edit(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>): Response
     {
@@ -94,7 +99,9 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
     }
 
     /**
-     * @Route("/{<?= $entity_identifier ?>}", name="<?= $route_name ?>_delete", methods={"DELETE"})
+     * @Route("/{<?= $entity_identifier ?>}", name="<?= $route_name ?>_delete", methods={"POST"})
+<?php if ($with_voter) {?>     * @IsGranted("delete", subject="<?= $entity_var_singular ?>", message="crud.edit.nogranted")
+<?php }?>   
      */
     public function delete(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>): Response
     {

@@ -12,16 +12,17 @@ use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
 
 use Symfony\Bundle\MakerBundle\FileManager;
+use Symfony\Component\Console\Input\InputOption;
+
 
 
 use Symfony\Bundle\MakerBundle\Generator;
 use Symfony\Bundle\MakerBundle\InputConfiguration;
 use Symfony\Bundle\MakerBundle\Str;
-use Symfony\Bundle\TwigBundle\TwigBundle;
+
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Routing\Annotation\Route;
 
 use Symfony\Component\HttpKernel\Kernel;
 
@@ -60,11 +61,11 @@ final class MakeBundle extends AbstractMaker
             ->setHelp("Create an empty bundle")
             ->addArgument('vendor', InputArgument::OPTIONAL, sprintf('The class name of the vendor (e.g. <fg=yellow>%s</>)', Str::asClassName(Str::getRandomTerm()."")))
             ->addArgument('bundle-name', InputArgument::OPTIONAL, sprintf('The class name of the bundle to create (e.g. <fg=yellow>%s</>)', Str::asClassName(Str::getRandomTerm()."Bundle")))
-        ;
+            ->addOption('with-collector', null, InputOption::VALUE_NONE, 'Create a Collector')
+       ;
       
     }
   
-    
     public function getSkeletonFolderBundle()
     {
         return($this->getSkeletonFolder().'/bundle/');
@@ -78,7 +79,9 @@ final class MakeBundle extends AbstractMaker
 
     public function getBundleRootFolder()
     {
-        return(strtolower($this->getVendorName())."/".Str::asCommand($this->getBundleName())."/");
+        
+        return(strtolower($this->getVendorName())."/". Str::asCommand($this->getBundleNameWhithoutVendor())."/");
+//        return(strtolower($this->getVendorName())."/".Str::asCommand($this->getBundleName())."/");
     }
     public function getTemplateFolder()
     {
@@ -102,6 +105,24 @@ final class MakeBundle extends AbstractMaker
         return($this->bundleName);
     }
     
+    public function getBundleNameWhithoutVendor()
+    {
+        $vendorLenght= strlen($this->vendor);
+        if ((substr($this->bundleName,0,$vendorLenght))==$this->vendor)
+        {   
+            return(substr($this->bundleName,$vendorLenght));
+        }
+        else
+        {
+            return($this->bundleName);
+        }
+    }
+    
+    
+    public function getBundleShortestName()
+    {
+        return(Str::removeSuffix($this->getBundleNameWhithoutVendor(),"Bundle"));
+    }
     public function getBundleNameSimple()
     {
         return(Str::removeSuffix($this->getBundleName(),"Bundle"));
@@ -139,19 +160,40 @@ final class MakeBundle extends AbstractMaker
     {
             
             $this->vendor=$input->getArgument('vendor');
+
             $this->bundleName=$input->getArgument('bundle-name');
             
-            $this->generator = new Generator($this->fileManager, 'Aldaflux\\'.$this->bundleName);
             
-            $withCollector=true;
-            $loadServiceYml=true;
+            if (! Str::hasSuffix($this->bundleName,"Bundle"))
+            {
+                $this->bundleName.="Bundle";
+            }
+            $vendorLenght= strlen($this->vendor);
+                    
+            if ((substr($this->bundleName,0,$vendorLenght))!=$this->vendor)
+            {
+                $this->bundleName=$this->vendor.$this->bundleName;
+            }
+            
+            if (! Str::hasSuffix($this->bundleName,"Bundle"))
+            {
+                $this->bundleName.="Bundle";
+            }
+            
+            $this->generator = new Generator($this->fileManager, $this->vendor.'\\'.$this->bundleName);
+            
+            $withCollector=$input->getOption('with-collector');
+                    
+            $loadServiceYml=$withCollector;
+            
+       
+            
+            $bundleClassDetails = $this->generator->createClassNameDetails($this->vendor.$this->bundleName,"");
             
             
+//            $rootNode=Str::asRouteName($this->getVendorName().'/'.$this->getBundleNameSimple());
+            $rootNode=Str::asRouteName($this->getBundleNameSimple());
             
-            $bundleClassDetails = $this->generator->createClassNameDetails($this->bundleName,"");
-            
-            
-            $rootNode=Str::asRouteName($this->getVendorName().'/'.$this->getBundleNameSimple());
 
 
             $bundleClassDetails = $this->generator->createClassNameDetails($this->bundleName,"");
@@ -163,8 +205,10 @@ final class MakeBundle extends AbstractMaker
             }
       
         
+        
        
         $bundleClassNameDetails = $generator->createClassNameDetails('\\'.$this->getVendorName().'\\'.$this->getBundleName(),"Bundle");
+        
 
         $nameSpace= ($bundleClassNameDetails->getFullName());
 
@@ -182,7 +226,7 @@ final class MakeBundle extends AbstractMaker
 
         
         $variables=[
-                'name' => strtolower( $this->getVendorName().'/'.Str::asCommand($this->getBundleName())),
+                'name' => strtolower( $this->getVendorName().'/'.Str::asCommand($this->getBundleNameWhithoutVendor())),
                 'namespace' => $nameSpace,
                 'homepage' => $this->getHomepage(),
                 'author' => $this->getAuthorInfos(),
@@ -228,12 +272,12 @@ final class MakeBundle extends AbstractMaker
     {
         
         
-             $CollectorClassName=$this->bundleName."Collector";
+        
+             $CollectorClassName=$this->getBundleShortestName()."Collector";
                 $collectorClassDetails = $this->generator->createClassNameDetails(
                     $CollectorClassName,
                     'DataCollector\\'
-                );
-
+                ); 
                 $collectorNameString=Str::asTwigVariable($this->vendor).".".Str::asTwigVariable($collectorClassDetails->getShortName());
                 
                 
@@ -263,16 +307,16 @@ final class MakeBundle extends AbstractMaker
          $templatesPathCollector=$templatesPath.''.Str::asFilePath($collectorClassDetails->getShortName()).'.html.twig';
 
                   
-         $templatesPathCollectorBundle="@".Str::removeSuffix(Str::getShortClassName($this->getBundleName()),"Bundle")."/".$templatesPathCollector;
+         $templatesPathCollectorBundle="@".(Str::getShortClassName($this->getBundleNameSimple()))."/".$templatesPathCollector;
          
         // $collectorNameString=Str::asTwigVariable($collectorClassDetails->getShortName());
          
-          
+         
          
             
          
             $this->generator->generateFile(
-            $this->getBundleRootFolder().'DataCollector/'.Str::getShortClassName($collectorClassDetails->getShortName()).'.php',
+            $this->getBundleRootFolder().'DataCollector/'.$this->getBundleShortestName().'Collector.php',
             $this->getSkeletonFolder().'DataCollector/DataCollector/Collector.tpl.php',
             [
                 'namespace' => Str::getNamespace($collectorClassDetails->getFullName()),
@@ -286,10 +330,13 @@ final class MakeBundle extends AbstractMaker
             
             
             
-            $iconPath=$templatesPath.'icon/'.Str::asFilePath($collectorClassDetails->getShortName()).'.svg';
+            $iconRelativePath=$templatesPath.'icon/'.Str::asFilePath($this->getBundleShortestName()).'.svg';
+            
+            $iconPath="@".(Str::getShortClassName($this->getBundleName()))."/".$iconRelativePath;
 
+            
             $this->generator->generateFile(
-            $this->getTemplateFolder().$iconPath,
+            $this->getTemplateFolder().$iconRelativePath,
             $this->getSkeletonFolder().'DataCollector/templates/data_collector/icon/icon.svg.tpl.php',['color'=>"gray"]);
             
             $this->generator->generateFile(

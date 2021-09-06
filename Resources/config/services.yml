@@ -7,6 +7,10 @@ services:
     arguments: ["@maker.doctrine_helper", "@maker.renderer.form_type_renderer", "@parameter_bag"]
     tags:
       - { name: maker.command }
+   Aldaflux\MyMakerBundle\Maker\MakeCrudUser:
+    arguments: ["@maker.doctrine_helper", "@maker.renderer.form_type_renderer", "@parameter_bag"]
+    tags:
+      - { name: maker.command }
    Aldaflux\MyMakerBundle\Maker\MakeBundle:
     arguments: ["@maker.file_manager", "@parameter_bag"]
     tags:

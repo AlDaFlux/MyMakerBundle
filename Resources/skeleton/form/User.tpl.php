@@ -15,6 +15,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use <?= $className ?>;
 <?php endforeach; ?>
 
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+
+
 class <?= $class_name ?> extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -32,6 +36,8 @@ class <?= $class_name ?> extends AbstractType
 <?php endif; ?>
 <?php endforeach; ?>
         ;
+        
+        
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -39,6 +45,7 @@ class <?= $class_name ?> extends AbstractType
         $resolver->setDefaults([
 <?php if ($bounded_full_class_name): ?>
             'data_class' => <?= $bounded_class_name ?>::class,
+            'mode' => null,
 <?php else: ?>
             // Configure your form options here
 <?php endif ?>
