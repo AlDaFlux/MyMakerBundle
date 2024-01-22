@@ -1,0 +1,34 @@
+{
+  "name": "aldaflux/my-maker-bundle",
+  "type": "symfony-bundle",
+  "description": "maker bundle crud variation",
+  "keywords": ["Bundle"],
+  "homepage": "https://github.com/Aldaflux/MyMakerBundle",
+  "language":  "php",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Antoine LOTZ",
+      "email": "antoine.lotz@gmail.com",
+      "homepage": "https://github.com/Aldaflux"
+    }
+  ],
+ "minimum-stability": "stable",
+ "prefer-stable":true,
+ "require": {
+        "symfony/framework-bundle": ">=5.4" 
+
+  },
+
+    "require-dev": {
+	"syfony/maker-bundle": ">=1.51"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aldaflux\\MyMakerBundle\\": ""
+        }
+    }
+
+}
+
+
