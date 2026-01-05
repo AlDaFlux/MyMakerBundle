@@ -29,7 +29,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Validator\Validation;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface; 
 

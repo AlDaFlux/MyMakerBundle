@@ -21,6 +21,9 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\Question;
 
+use function Symfony\Component\String\u;
+
+
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface; 
 
 
@@ -30,6 +33,10 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 final class MakeCrudAdmin extends MakeAdmin
 {
 
+    
+    public string $extend="base.html.twig";
+    
+    
     public static function getCommandName(): string
     {
         return 'make:crud:admin';
@@ -60,6 +67,13 @@ final class MakeCrudAdmin extends MakeAdmin
         $inputConfig->setArgumentAsNonInteractive('entity-class');
     }
 
+    
+    public function humanFieldTitle(string $text) : string
+    {
+        return u($text)->snake()->replace('_', ' ')->title()->toString();
+    }
+    
+    
     public function interact(InputInterface $input, ConsoleStyle $io, Command $command) : void
     {
         if (null === $input->getArgument('entity-class')) {
@@ -87,7 +101,7 @@ final class MakeCrudAdmin extends MakeAdmin
             'Entity\\'
         );
         
-        $humanWordEntityName=Str::asHumanWords($input->getArgument('entity-class'));
+        $humanWordEntityName= str_replace("\\", "", Str::asHumanWords($input->getArgument('entity-class')));
         
         
         
@@ -178,24 +192,65 @@ final class MakeCrudAdmin extends MakeAdmin
         $props = $reflect->getProperties();
         $propertiesList = [];
         foreach ($props as $prop) {
-            $propertiesList[] = $prop->getName();
+            $propertiesList[$prop->getName()] = $prop->getName();
         }
-        $propertiesList = array_diff($propertiesList, ['id']);
-
-
+      
+        //$propertiesList = array_diff($propertiesList, ['id']);
         $fieldsWithTypes = [];
 
+        $fieldsNotInForm = ['id','updatedAt', 'createdAt', 'updatedBy', 'createdBy'];
+        $fieldsNotDisplay[] = 'password';
 
-        $fieldsNotInForm = ['updatedAt', 'createdAt', 'updatedBy', 'createdBy'];
-        $fieldsNotDisplay = ['password'];
+        $displayFields = $propertiesList;
 
-        foreach ($entityDoctrineDetails->getDisplayFields() as $fieldToDisplay) {
-            if (!in_array($fieldToDisplay["fieldName"], $fieldsNotDisplay)) {
-                $displayFileds[] = $fieldToDisplay;
+        $orderedFields = array();
+        
+        
+        
+        
+        // Ajouter les champs simples
+        foreach ($entityDoctrineDetails->getDisplayFields() as $fieldName => $fieldMapping) {
+            if (!in_array($fieldName, $fieldsNotDisplay)) {
+                $displayFields[$fieldName] = [
+                    'fieldName' => $fieldName,
+                    'displayFieldName' => $this->humanFieldTitle($fieldName),
+                    'type' => $fieldMapping['type'] ?? 'unknown',
+                    'isAssociation' => false
+                ];
+            }
+        }
+      
+        
+        
+        $reflectionClass = new \ReflectionClass($entityDoctrineDetails);
+        $metadata = $reflectionClass->getProperty('metadata');
+        $metadata->setAccessible(true);
+        $classMetadata = $metadata->getValue($entityDoctrineDetails);
+        
+        if (isset($classMetadata->associationMappings)) {
+            foreach ($classMetadata->associationMappings as $fieldName => $association) {
+                    if (!in_array($fieldName, $fieldsNotDisplay) && isset($association['inversedBy'])) {
+                        $displayFields[$fieldName] = [
+                            'fieldName' => $fieldName,
+                            'displayFieldName' => $this->humanFieldTitle($fieldName),
+                            'type' => $association['type'],
+                            'isAssociation' => true
+                        ];
+                    }
             }
         }
 
-
+        // supression des chmaps non trouvés
+        foreach ($displayFields as $key => $displayField)
+        {
+            if ($displayField==$key)
+            {
+                unset($displayFields[$key]);
+            }
+        }
+        
+        
+        
         foreach ($propertiesList as $field) {
             if (!in_array($field, $fieldsNotInForm)) {
                 $fieldType = $this->getFieldType($entityFulName, $field);
@@ -206,8 +261,9 @@ final class MakeCrudAdmin extends MakeAdmin
                 }
             }
         }
-
-        //        $formFields= array_diff($formFields,$fieldsNotInForm);
+        
+        
+//        dd($displayFields);
 
 
         $this->formTypeRenderer->render(
@@ -241,7 +297,7 @@ final class MakeCrudAdmin extends MakeAdmin
                 'entity_twig_var_plural' => $entityTwigVarPlural,
                 'entity_twig_var_singular' => $entityTwigVarSingular,
                 'entity_identifier' => $entityDoctrineDetails->getIdentifier(),
-                'entity_fields' => $displayFileds,
+                'entity_fields' => $displayFields,
                 'route_name' => $routeName,
                 'with_voter' => $withVoter,
                 'extend' => $this->extend,
@@ -258,7 +314,7 @@ final class MakeCrudAdmin extends MakeAdmin
                 'entity_class_name' => $entityClassDetails->getShortName(),
                 'entity_twig_var_singular' => $entityTwigVarSingular,
                 'entity_identifier' => $entityDoctrineDetails->getIdentifier(),
-                'entity_fields' => $displayFileds,
+                'entity_fields' => $displayFields,
                 'route_name' => $routeName,
                 'templates_path' => $templatesPath,
                 'with_voter' => $withVoter,
@@ -268,9 +324,7 @@ final class MakeCrudAdmin extends MakeAdmin
             ],
         ];
 
-
-        //dump($templates["index"]);
-
+         
         foreach ($templates as $template => $variables) {
             $generator->generateTemplate(
                 $templatesPath . '/' . $template . '.html.twig',

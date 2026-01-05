@@ -10,9 +10,19 @@
         <tbody>
 <?php foreach ($entity_fields as $field): ?>
             <tr>
-                <th><?= ucfirst($field['fieldName']) ?></th>
+                <th><?= ucfirst($field['displayFieldName']) ?></th><?php if ($field["type"]=="boolean") { ?>
+
+                <td class='center'>
+                        {% if <?= $entity_twig_var_singular ?>.<?=  $field["fieldName"] ?> %}
+                            <i class='{{'crud.boolean.true_classe'|trans}}'>
+                        {% else %}
+                            <i class='{{'crud.boolean.false_classe'|trans}}'>
+                        {% endif  %}
+                    </td><?php } else { ?>
+                    
                 <td>{{ <?= $helper->getEntityFieldPrintCode($entity_twig_var_singular, $field) ?> }}</td>
-            </tr>
+            <?php } ?>
+</tr>
 <?php endforeach; ?>
         </tbody>
     </table>

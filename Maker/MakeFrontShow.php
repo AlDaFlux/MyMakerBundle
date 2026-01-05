@@ -9,7 +9,6 @@ use Symfony\Bundle\MakerBundle\Maker\AbstractMaker;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\Common\Inflector\Inflector as LegacyInflector;
 use Doctrine\Inflector\InflectorFactory;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
 use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
@@ -251,10 +250,6 @@ final class MakeFrontShow extends AbstractMaker
             'security-csrf'
         );
 
-        $dependencies->addClassDependency(
-            ParamConverter::class,
-            'annotations'
-        );
     }
 
     private function pluralize(string $word): string

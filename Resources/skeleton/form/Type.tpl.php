@@ -2,6 +2,10 @@
 
 namespace <?= $namespace ?>;
 
+
+////////////////////// ICI // ICI // ICI // ICI// ICI // ICI// ICI // ICI// ICI // ICI// ICI // ICI
+
+
 <?php if ($bounded_full_class_name): ?>
 use <?= $bounded_full_class_name ?>;
 <?php endif ?>

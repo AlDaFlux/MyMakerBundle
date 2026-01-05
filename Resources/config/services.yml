@@ -19,5 +19,17 @@ services:
     arguments: ["@maker.file_manager","@maker.doctrine_helper", "@parameter_bag"]
     tags:
       - { name: maker.command }
+      
+   Aldaflux\MyMakerBundle\Service\MyGeneratorTwigHelper:
+    arguments: ["@maker.file_manager"]
+   aldaflux.maker.generator_twig:
+        alias: Aldaflux\MyMakerBundle\Service\MyGeneratorTwigHelper
+        public: true        
+      
+#   Aldaflux\MyMakerBundle\Maker\MakeCruda:
+#    arguments: ["@maker.doctrine_helper", "@maker.renderer.form_type_renderer", "@aldaflux.maker.generator_twig"]
+    # arguments: ["@maker.doctrine_helper", "@maker.renderer.form_type_renderer"]
+#    tags:
+#      - { name: maker.command }
 
 #    arguments: ["%kernel.project_dir%"]

@@ -7,13 +7,13 @@ use <?= $form_full_class_name ?>;
 <?php if (isset($repository_full_class_name)): ?>
 use <?= $repository_full_class_name ?>;
 <?php endif ?>
+<?php if ($with_voter) {?>
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+<?php }?>
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-
-<?php if ($with_voter) {?>use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;<?php }?>   
-
+use Symfony\Component\Routing\Annotation\Route; 
 
  #[Route(path: '<?= $route_path ?>')]
 class <?= $class_name ?> extends AbstractController<?= "\n" ?>
@@ -54,11 +54,14 @@ class <?= $class_name ?> extends AbstractController<?= "\n" ?>
 
         return $this->render('<?= $templates_path ?>/new.html.twig', [
             '<?= $entity_twig_var_singular ?>' => $<?= $entity_var_singular ?>,
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 
-    #[Route(path: '/{<?= $entity_identifier ?>}', name: "<?= $route_name ?>_show")]
+    
+<?php if ($with_voter) {?>
+    #[IsGranted('view', subject: '<?= $entity_var_singular ?>', message: 'crud.view.nogranted')]
+       <?php }?>    #[Route(path: '/{<?= $entity_identifier ?>}', name: "<?= $route_name ?>_show")]
     public function show(<?= $entity_class_name ?> $<?= $entity_var_singular ?>): Response
     {
         return $this->render('<?= $templates_path ?>/show.html.twig', [
@@ -86,14 +89,14 @@ class <?= $class_name ?> extends AbstractController<?= "\n" ?>
 
         return $this->render('<?= $templates_path ?>/edit.html.twig', [
             '<?= $entity_twig_var_singular ?>' => $<?= $entity_var_singular ?>,
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 
     
      
     #[Route(path: '/{<?= $entity_identifier ?>}/delete', name: '<?= $route_name ?>_delete', methods: ['POST'])]
-<?php if ($with_voter) {?>     #[IsGranted("edit", subject:"<?= $entity_var_singular ?>", message:"crud.edit.nogranted")]
+<?php if ($with_voter) {?>     #[IsGranted("delete", subject:"<?= $entity_var_singular ?>", message:"crud.edit.nogranted")]
 <?php }?>
     public function delete(Request $request, <?= $repository_class_name ?> $<?= $repository_var ?>, <?= $entity_class_name ?> $<?= $entity_var_singular ?>): Response
     {

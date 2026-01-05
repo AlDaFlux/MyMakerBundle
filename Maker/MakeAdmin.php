@@ -8,8 +8,7 @@ use Symfony\Bundle\MakerBundle\Maker\AbstractMaker;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\Common\Inflector\Inflector as LegacyInflector;
-use Doctrine\Inflector\InflectorFactory;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Doctrine\Inflector\InflectorFactory; 
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
 use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
@@ -24,7 +23,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Validator\Validation;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface; 
 
@@ -43,6 +41,8 @@ class MakeAdmin extends AbstractMaker
     protected $routeNamePrefix;
     protected $routePathPrefix;
     protected $templateFolder; 
+    
+    public string $extend="base.html.twig";
     
     public function __construct(DoctrineHelper $doctrineHelper, FormTypeRenderer $formTypeRenderer, ParameterBagInterface $parameters)
     {
@@ -87,10 +87,6 @@ class MakeAdmin extends AbstractMaker
         if (isset($config["extend"]))
         {
             $this->extend = $config["extend"];
-        }
-        else
-        {
-            $this->extend="";
         }
 
         
@@ -156,10 +152,7 @@ class MakeAdmin extends AbstractMaker
             'security-csrf'
         );
 
-        $dependencies->addClassDependency(
-            ParamConverter::class,
-            'annotations'
-        );
+       
     }
 
     protected function pluralize(string $word): string
@@ -182,7 +175,9 @@ class MakeAdmin extends AbstractMaker
 
     protected function getFieldType($entity, $fieldName)
     {
-        $annotationReader = new AnnotationReader();
+        return "aaaa";
+        
+//        $annotationReader = new AnnotationReader();
         $refClass = new \ReflectionClass($entity);
         $annotations = $annotationReader->getPropertyAnnotations($refClass->getProperty($fieldName));
 

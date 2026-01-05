@@ -8,28 +8,26 @@
         <thead>
             <tr>
 <?php foreach ($entity_fields as $field): ?>
-                <th><?= ucfirst($field['fieldName']) ?></th>
+                <th><?= ucfirst($field['displayFieldName']) ?></th>
 <?php endforeach; ?>
-                <th>actions</th>
             </tr>
         </thead>
         <tbody>
+        <?php $first = true ?>
         {% for <?= $entity_twig_var_singular ?> in <?= $entity_twig_var_plural ?> %}
             <tr>
 <?php foreach ($entity_fields as $field): ?><?php if ($field["type"]=="boolean") { ?>
+
                     <td class='center'>
                         {% if <?= $entity_twig_var_singular ?>.<?=  $field["fieldName"] ?> %}
-                            <i class='boolean boolean-true glyphicon glyphicon-ok'>
+                            <i class='{{'crud.boolean.true_classe'|trans}}'>
                         {% else %}
-                            <i class='boolean boolean-false glyphicon glyphicon-remove'>
+                            <i class='{{'crud.boolean.false_classe'|trans}}'>
                         {% endif  %}
                     </td><?php } else { ?>
                     
-                    <td>{{ <?= $helper->getEntityFieldPrintCode($entity_twig_var_singular, $field) ?> }}</td><?php } ?><?php endforeach; ?>
-                    
-                    <td>
-                        <a href="{{ path('<?= $route_name ?>_show', {'<?= $entity_identifier ?>': <?= $entity_twig_var_singular ?>.<?= $entity_identifier ?>}) }}"><i class='{% trans %}crud.show.icon{% endtrans %}'></i>{% trans %}crud.show.text{% endtrans %}</a>
-                    </td>
+                    <td><?php if ($first) { ?><a href="{{ path('<?= $route_name ?>_show', {'<?= $entity_identifier ?>': <?= $entity_twig_var_singular ?>.<?= $entity_identifier ?>}) }}"><?php } ?>{{ <?= $helper->getEntityFieldPrintCode($entity_twig_var_singular, $field) ?> }}<?php if ($first) { ?></a><?php } ?></td><?php } ?><?php $first = false ; endforeach; ?>
+
             </tr>
         {% else %}
             <tr>
@@ -39,5 +37,12 @@
         </tbody>
     </table>
 
+    <?php if ($with_voter) {?>
+    {% if is_granted('add_<?= $entity_twig_var_singular ?>') %}
+        <?php }?>
     <a class='btn btn-block btn-primary ' href="{{ path('<?= $route_name ?>_new') }}"> <i class='{% trans %}crud.new.icon{% endtrans %}'></i> {% trans %}crud.new.text{% endtrans %}</a>
+    <?php if ($with_voter) {?>
+    {% endif %}
+        <?php }?>
+    
 {% endblock %}

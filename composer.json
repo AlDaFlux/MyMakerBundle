@@ -16,12 +16,12 @@
  "minimum-stability": "stable",
  "prefer-stable":true,
  "require": {
-        "symfony/framework-bundle": ">=5.4" 
+        "symfony/framework-bundle": ">=7.4" 
 
   },
 
     "require-dev": {
-	"syfony/maker-bundle": ">=1.51"
+	"syfony/maker-bundle": ">=1.65"
     },
     "autoload": {
         "psr-4": {

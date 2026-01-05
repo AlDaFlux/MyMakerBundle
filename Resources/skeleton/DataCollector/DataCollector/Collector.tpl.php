@@ -33,7 +33,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?>
     
 //    Response $response
             
-    public function collect(Request $request, Response $response, \Throwable $exception = null) : void
+    public function collect(Request $request, Response $response, \Throwable $exception = null)
     {
             $this->data = ['test' => "OK"];
     }

@@ -197,13 +197,7 @@ final class MakeBundle extends AbstractMaker
        
             
             $bundleClassDetails = $this->generator->createClassNameDetails($this->vendor.$this->bundleName,"");
-            
-            
-//            $rootNode=Str::asRouteName($this->getVendorName().'/'.$this->getBundleNameSimple());
             $rootNode=Str::asRouteName($this->getBundleNameSimple());
-            
-
-
             $bundleClassDetails = $this->generator->createClassNameDetails($this->bundleName,"");
             
 
@@ -259,7 +253,7 @@ final class MakeBundle extends AbstractMaker
                 
         $io->text([
             'Next: Open your voter and add your logic.',
-            'Find the documentation at <fg=yellow>https://symfony.com/doc/current/security/voters.html</>',
+            'Find the documentation at <fg=yellow>https://symfonycasts.com/screencast/bundle-development</>',
         ]);
           
         $io->text(sprintf('Next: Check your new CRUD by going to <fg=yellow>%s/</>', "321321"));
