@@ -16,7 +16,7 @@
  "minimum-stability": "stable",
  "prefer-stable":true,
  "require": {
-        "symfony/framework-bundle": ">=7.4" 
+        "symfony/framework-bundle": ">=6.4" 
 
   },
 
